@@ -14,7 +14,10 @@ import {
   Luggage, 
   Sun,
   Camera,
-  Info
+  Info,
+  Share2,
+  ExternalLink,
+  Smartphone
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -103,7 +106,7 @@ export default function App() {
   }
 
   const [expenses, setExpenses] = useState<Expense[]>(() => {
-    const saved = localStorage.getItem("cancun_honeymoon_expenses");
+    const saved = localStorage.getItem("cancun_honeymoon_expenses_v2");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -112,11 +115,8 @@ export default function App() {
       }
     }
     return [
-      { id: "e1", title: "서울-LA-칸쿤 아시아나 결제", amount: 1980, category: "flights" },
-      { id: "e2", title: "스칼렛 아르떼 5박 예약", amount: 3200, category: "hotels" },
-      { id: "e3", title: "TRS 코랄 4박 스윔업 예약", amount: 2400, category: "hotels" },
       { id: "e4", title: "치첸이사 전 투어 보증세", amount: 66, category: "activities" },
-      { id: "e5", title: "버틀러 및 테이블 기본 팁 묶음", amount: 150, category: "tips" }
+      { id: "e5", title: "버틀러 및 테이블 기본 팁 묶음", amount: 100, category: "tips" }
     ];
   });
 
@@ -125,7 +125,7 @@ export default function App() {
   const [newExpenseCategory, setNewExpenseCategory] = useState<Expense["category"]>("dining");
 
   useEffect(() => {
-    localStorage.setItem("cancun_honeymoon_expenses", JSON.stringify(expenses));
+    localStorage.setItem("cancun_honeymoon_expenses_v2", JSON.stringify(expenses));
   }, [expenses]);
 
   const handleAddExpense = (e: React.FormEvent) => {
@@ -153,78 +153,8 @@ export default function App() {
 
   const totalBudget = expenses.reduce((sum, e) => sum + e.amount, 0);
 
-  // 3. D-Day Countdown Timer State
-  const departureTime = new Date("2026-08-29T12:40:00").getTime();
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-    isPassed: false
-  });
+  // 5. Unused Share/Countdown logic removed
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = departureTime - now;
-
-      if (distance < 0) {
-        setTimeLeft(prev => ({ ...prev, isPassed: true }));
-        clearInterval(timer);
-      } else {
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        setTimeLeft({
-          days,
-          hours,
-          minutes,
-          seconds,
-          isPassed: false
-        });
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [departureTime]);
-
-  // 5. Kakao Sharing Summary Builder
-  const [copied, setCopied] = useState(false);
-
-  const copyItineraryText = () => {
-    let text = `정진❤️예찬 신혼여행 최종 일정표 (실시간 업데이트)
-
-* 호텔 스칼렛 아르떼 예약번호: ${arteCode}
-* TRS 코랄 주니어 스윗 스윔업 예약번호: ${coralCode}
-* 일정 기간: 08.29 ~ 09.08 (9박 11일)
-
-[상세 일정 요약]
-`;
-
-    itinerary.forEach(day => {
-      text += `\n▶ Day ${day.dayNumber} • ${day.dateStr} [${day.title} - ${day.subtitle}]\n`;
-      day.items.forEach(item => {
-        text += `- ${item.time} : ${item.title}\n  (${item.description})\n`;
-        if (item.tips) {
-          text += `  💡 팁: ${item.tips}\n`;
-        }
-      });
-    });
-
-    text += `\n❤️ 정진님과 예찬님의 행복한 칸쿤 허니문을 응원합니다! ⓒ Cancun Honeymoon Hub`;
-
-    const dummy = document.createElement("textarea");
-    document.body.appendChild(dummy);
-    dummy.value = text;
-    dummy.select();
-    document.execCommand("copy");
-    document.body.removeChild(dummy);
-
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
-  };
 
   return (
     <div className="bg-gradient-to-tr from-rose-50/70 via-amber-50/40 to-indigo-50/50 min-h-screen text-slate-800 pb-16">
@@ -237,7 +167,7 @@ export default function App() {
             <span className="font-serif text-lg font-bold text-slate-800 tracking-wider">Honeymoon in Cancun</span>
           </div>
           <div className="bg-gradient-to-r from-rose-100 to-pink-100 text-rose-600 px-4 py-1.5 rounded-full text-xs font-bold shadow-sm">
-            {timeLeft.isPassed ? "진행 중 ✈️" : `출발 D-${timeLeft.days}일`}
+            실시간 허브 💍
           </div>
         </div>
       </header>
@@ -260,31 +190,12 @@ export default function App() {
             </p>
           </div>
 
-          {/* D-Day Countdown Ticker Grid */}
-          {!timeLeft.isPassed && (
-            <div className="grid grid-cols-4 gap-2.5 max-w-sm mx-auto mt-6">
-              {[
-                { label: "DAYS", value: timeLeft.days, color: "from-rose-400 to-pink-500" },
-                { label: "HOURS", value: timeLeft.hours, color: "from-pink-400 to-rose-400" },
-                { label: "MINS", value: timeLeft.minutes, color: "from-amber-400 to-rose-400" },
-                { label: "SECS", value: timeLeft.seconds, color: "from-indigo-400 to-purple-400" }
-              ].map((t, idx) => (
-                <div key={idx} className="bg-slate-50/80 rounded-2xl p-2.5 border border-slate-100/50 text-center shadow-sm relative">
-                  <span className={`block text-xl font-black font-serif bg-gradient-to-r ${t.color} bg-clip-text text-transparent`}>
-                    {String(t.value).padStart(2, "0")}
-                  </span>
-                  <span className="block text-[8px] font-bold text-slate-400 tracking-wider mt-0.5">{t.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
           {/* Booking Confirmation / Code Pill Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
             <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex items-center justify-between">
               <div className="flex-1 mr-2">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">스칼렛 아르떼 (Hotel Xcaret Arte)</p>
-                <p className="text-xs font-bold text-slate-700 mt-1">음악동/디자인동 • 5박 예약 완료</p>
+                <p className="text-xs font-bold text-slate-700 mt-1">음악동/디자인동 • 4박 예약 완료</p>
                 {isEditingArte ? (
                   <div className="flex items-center gap-1.5 mt-1">
                     <input
@@ -319,7 +230,7 @@ export default function App() {
             <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex items-center justify-between">
               <div className="flex-1 mr-2">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TRS 코랄 (TRS Coral Hotel)</p>
-                <p className="text-xs font-bold text-slate-700 mt-1">주니어 스위트 스윔업 • 4박 예약 완료</p>
+                <p className="text-xs font-bold text-slate-700 mt-1">주니어 스위트 스윔업 • 3박 예약 완료</p>
                 {isEditingCoral ? (
                   <div className="flex items-center gap-1.5 mt-1">
                     <input
@@ -350,30 +261,6 @@ export default function App() {
               </div>
               <span className="text-xl shrink-0">👙</span>
             </div>
-          </div>
-
-          {/* Quick Sharing Action */}
-          <div className="mt-5 text-center">
-            <button
-              onClick={copyItineraryText}
-              className="w-full bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-bold py-3 px-6 rounded-2xl text-xs shadow-md transition-all flex justify-center items-center gap-2"
-            >
-              <Copy className="w-4 h-4" />
-              <span>카카오톡 및 가족 공유용 일정표 텍스트 복사하기</span>
-            </button>
-            <AnimatePresence>
-              {copied && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="text-xs text-emerald-600 font-bold mt-2 flex items-center justify-center gap-1.5"
-                >
-                  <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  <span>일정표 텍스트가 클립보드에 예쁘게 복사되었습니다!</span>
-                </motion.p>
-              )}
-            </AnimatePresence>
           </div>
         </div>
 
