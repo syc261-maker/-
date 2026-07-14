@@ -1,0 +1,6 @@
+{
+  "name": "Cancun Honeymoon Hub",
+  "description": "정진 ❤️ 예찬 커플의 로맨틱한 칸쿤 신혼여행 일정표, 스마트 준비물 체크리스트 및 실시간 AI 여행 도우미",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
